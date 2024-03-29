@@ -1,6 +1,8 @@
 using ModelTesting
+using DifferentialEquations, DataFrames
+import SymbolicIndexingInterface
 using Test
 
 @testset "ModelTesting.jl" begin
-    # Write your tests here.
+    include("timeseries.jl")
 end

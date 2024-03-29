@@ -1,5 +1,8 @@
 module ModelTesting
+using DataFrames
+using ModelingToolkit, DifferentialEquations
 
-# Write your package code here.
+include("namespace_utils.jl")
+include("timeseries/timeseries.jl")
 
 end
