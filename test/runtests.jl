@@ -1,5 +1,5 @@
 using ModelTesting
-using DifferentialEquations, DataFrames
+using DifferentialEquations, DataFrames, ModelingToolkit
 import SymbolicIndexingInterface
 using Test
 

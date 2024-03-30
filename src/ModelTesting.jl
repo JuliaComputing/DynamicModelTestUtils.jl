@@ -1,8 +1,7 @@
 module ModelTesting
 using DataFrames
-using ModelingToolkit, DifferentialEquations
+using ModelingToolkit, DifferentialEquations, DiffEqDevTools, SymbolicIndexingInterface
 
-include("namespace_utils.jl")
-include("timeseries/timeseries.jl")
-
+include("test/measured.jl")
+include("test/continous/delta_sol.jl")
 end
