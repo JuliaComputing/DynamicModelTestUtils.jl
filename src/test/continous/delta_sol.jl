@@ -71,6 +71,51 @@ function compare_solutions(
 end
 export compare_solutions
 
+function compare_dense_solutions(
+    (ref_name, reference)::Pair{Symbol, <:SciMLBase.AbstractTimeseriesSolution},
+    sols::Vector{<:Pair{Symbol, <:SciMLBase.AbstractTimeseriesSolution}};
+    integrator=Tsit5(),
+    metric=abs
+)
+    results = Dict{Symbol, Any}()
+    reference_container = symbolic_container(reference)
+    containers = symbolic_container.(last.(sols))
+
+    measured_reference = measured_values(reference_container)
+    sols_measured = measured_values.(containers)
+    @assert all(_symbolic_subset.((measured_reference,), sols_measured)) "Test solutions must expose a superset of the reference's variables for comparison"
+    @assert length(measured_reference) > 0 "Compared solutions must share at least one measured variable"
+    measured = measured_reference
+
+    timebounds(sol) = (sol.t[1], sol.t[end])
+    @assert reference.dense "Dense (integrated) comparision requires a dense reference solution"
+    for (test_name, test_sol) in sols
+        @assert test_sol.dense "Test solution $(test_name) must be dense in order to use continous-time comparison"
+        @assert timebounds(test_sol) == timebounds(reference) "Test solution $(test_name) has time range $(timebounds(test_sol)) which differs from the reference $(timebounds(reference))"
+    end
+
+
+    ref_t_vars = independent_variable_symbols(reference_container)
+    if length(ref_t_vars) > 1
+        @error "PDE solutions not currently supported; only one iv is allowed"
+    end
+    ref_t_var = first(ref_t_vars) 
+
+    state_size = length(measured)
+    function compare!(du, u, p, t) 
+        offs = 1
+        for (test_name, test_sol) in sols
+            du[offs:offs+state_size-1] .= abs.(reference(t, idxs=measured) .- test_sol(t, idxs=measured))
+            offs += state_size
+        end
+    end
+    func = ODEFunction(compare!; sys = SymbolCache(collect(Iterators.flatten([namespace_symbol.((test_name, ), measured) for (test_name, _) in sols])), [], ref_t_var))
+    prob = ODEProblem(func, zeros(length(sols) * length(measured)), timebounds(reference))
+    soln = solve(prob, integrator)
+    return soln
+end
+export compare_dense_solutions
+
 function compute_error_metrics(output_results, ref_soln, test_soln)
     delta = ref_soln - test_soln
     output_results[:l∞] = maximum(vecvecapply((x) -> abs.(x), delta))
