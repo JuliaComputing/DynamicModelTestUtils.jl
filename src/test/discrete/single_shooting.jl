@@ -25,9 +25,12 @@ function compare_discrete_to_continous(
 
     data_matrix = collect.(eachrow(data[!, string.(measured)]))  # lame and slow
     solution_data = sol[measured]
-    compute_error_metrics(results, solution_data, data_matrix)
-    results[:final] = recursive_mean(abs.(solution_data[end] - collect(data[end, string.(measured)])))
+    metrics = Dict{Symbol, Any}()
+    compute_error_metrics(metrics, solution_data, data_matrix)
+    metrics[:final] = recursive_mean(abs.(solution_data[end] - collect(data[end, string.(measured)])))
+    results[:metrics] = metrics
     cols = []
+    push!(cols, :timestamp => data[:, :timestamp])
     append!(cols, make_cols(namespace_symbol.((:simulated,), measured), solution_data))
     append!(cols, make_cols(namespace_symbol.((:data,), measured), data_matrix))
     results[:data] = DataFrame(cols)

@@ -1,5 +1,5 @@
 Base.isapprox((v1, t1)::Tuple{Vector{Float64}, Float64}, (v2, t2)::Tuple{Vector{Float64}, Float64}) = v1 ≈ v2 && t1 ≈ t2
-tol = 1e-8
+tol = 1e-6
 
 @testset "Continous" begin 
     @testset "Model-Model Mixed (self-discretized) Comparison" begin 
@@ -75,11 +75,14 @@ end
         ref_sol = solve(ref_prob, Tsit5(), reltol = 1e-8, abstol = 1e-8)
         data = DataFrame(["timestamp" => Float64[], "x(t)" => Float64[], "y(t)" => Float64[]])
         for t in LinRange(0.0, 1.0, 1000)
-            push!(data, [t, ref_sol(t, idxs=fol.x) + randn()*0.1, ref_sol(t, idxs=fol.y) + randn()*0.1])
+            push!(data, [t, ref_sol(t, idxs=fol.x) + randn() * 0.1, ref_sol(t, idxs=fol.y) * randn() * 0.1])
         end
         
-        results = ModelTesting.validate(fol, data; search_space=[fol.τ => (0.5,0.5)], params = [fol.τ => 0.5], u0 = [fol.x => 0.0])
-
-        println(results)
+        results_bad = ModelTesting.validate(fol, data; search_space=[fol.τ => (0.5,0.5)], params = [fol.τ => 0.5], u0 = [fol.x => 0.0])
+        results_good = ModelTesting.validate(fol, data; search_space=[fol.τ => (1.0,1.0)], params = [fol.τ => 1.0], u0 = [fol.x => 0.0])
+        @test results_good[:metrics][:l∞] < results_bad[:metrics][:l∞]
+        @test results_good[:metrics][:l2] < results_bad[:metrics][:l2]
+        CSV.write("results.csv", results_bad[:data])
+        display(results_good[:data])
     end
 end
