@@ -1,3 +1,4 @@
+using JuliaSimModelOptimizer
 using ModelTesting
 using DifferentialEquations, DataFrames, ModelingToolkit
 import SymbolicIndexingInterface

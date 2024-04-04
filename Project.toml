@@ -17,4 +17,10 @@ julia = "1.10"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
+test = ["Test", "JuliaSimModelOptimizer"]
+
+[weakdeps]
+JuliaSimModelOptimizer = "e76a656c-db09-4a9a-8f5e-6a4d9ca4a950"
+
+[extensions]
+ModelTestingCalibration = "JuliaSimModelOptimizer"

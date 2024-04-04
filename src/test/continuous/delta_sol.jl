@@ -61,7 +61,7 @@ function compare_solutions(
             @warn "Comparison of $ref_name to $name is invalid (cannot match timebases); only computing final state error"
             continue
         end
-        test_results[:final] = recursive_mean(abs.(ref_soln - test_soln))
+        test_results[:final] = recursive_mean(abs.(ref_soln[end] - test_soln[end]))
         compute_error_metrics(test_results, ref_soln, test_soln)
         append!(cols, make_cols(namespace_symbol.((name,), measured), test_soln))
         testsols[name] = test_results
@@ -116,7 +116,9 @@ function compare_dense_solutions(
 end
 export compare_dense_solutions
 
-function compute_error_metrics(output_results, ref_soln, test_soln)
+function compute_error_metrics(
+    output_results, 
+    ref_soln, test_soln)
     delta = ref_soln - test_soln
     output_results[:l∞] = maximum(vecvecapply((x) -> abs.(x), delta))
     output_results[:l2] = sqrt(recursive_mean(vecvecapply((x) -> float(x) .^ 2, delta)))
