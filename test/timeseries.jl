@@ -41,6 +41,8 @@ tol = 1e-6
         @test results_bad[:l∞] > tol
         @test results_bad[:l2] > tol
         @test results_bad[:final] > tol
+
+        merge_results(:reference => d1, :good => d2, :bad => d3)
     end
     @testset "Model-Model Continous Comparison" begin 
         @variables t 
@@ -84,11 +86,12 @@ end
             push!(data, [t, ref_sol(t, idxs=fol.x) + randn() * 0.1, ref_sol(t, idxs=fol.y) * randn() * 0.1])
         end
         
-        results_bad = ModelTesting.validate(fol, data; search_space=[fol.τ => (0.5,0.5)], params = [fol.τ => 0.5], u0 = [fol.x => 0.0])
-        results_good = ModelTesting.validate(fol, data; search_space=[fol.τ => (1.0,1.0)], params = [fol.τ => 1.0], u0 = [fol.x => 0.0])
-        @test results_good[:metrics][:l∞] < results_bad[:metrics][:l∞]
-        @test results_good[:metrics][:l2] < results_bad[:metrics][:l2]
-        CSV.write("results.csv", results_bad[:data])
-        display(results_good[:data])
+        sim_bad = discretize_solution(ModelTesting.validate(fol, data; search_space=[fol.τ => (0.5,0.5)], params = [fol.τ => 0.5], u0 = [fol.x => 0.0]), data)
+        sim_good = discretize_solution(ModelTesting.validate(fol, data; search_space=[fol.τ => (1.0,1.0)], params = [fol.τ => 1.0], u0 = [fol.x => 0.0]), data)
+        results_good = compare_discrete(fol, data, sim_good)
+        results_bad = compare_discrete(fol, data, sim_bad)
+
+        @test results_good[:l∞] < results_bad[:l∞]
+        @test results_good[:l2] < results_bad[:l2]
     end
 end

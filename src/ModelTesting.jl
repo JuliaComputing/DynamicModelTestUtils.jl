@@ -5,4 +5,5 @@ using ModelingToolkit, DifferentialEquations, DiffEqDevTools, SymbolicIndexingIn
 include("test/measured.jl")
 include("test/continuous/delta_sol.jl")
 include("test/discrete/single_shooting.jl")
+include("test/discrete/merge.jl")
 end

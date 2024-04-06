@@ -20,8 +20,7 @@ function ModelTesting.validate(model::AbstractTimeDependentSystem, data; pem_coe
         filter(arg->first(arg) != :model_transformations, experiment_kwargs)...)
     # no search space - this is just a validation run
     i = InverseProblem([experiment], nothing, search_space)
-    sim_sol = simulate(experiment, i)
-    return compare_discrete_to_continous(sim_sol, data)
+    return simulate(experiment, i)
 end
 
 end
