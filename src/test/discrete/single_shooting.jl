@@ -5,36 +5,19 @@ function validate(model, data)
     throw("Discrete comparison currently requires JSMO!")
 end
 
-function compare_discrete_to_continous(
-    sol::SciMLBase.AbstractTimeseriesSolution,
-    data::DataFrame)
-    @assert "timestamp" ∈ names(data) "The data must contain a column named `timestamp`"
-    sort!(data, [:timestamp])
-    @assert data[!, :timestamp] == sol.t "The data's discretization points and the solution time discretization must match"
-    
-    results = Dict{Symbol, Any}()
-    reference_container = symbolic_container(sol)
-    measured_reference = measured_values(reference_container)
-    @assert length(measured_reference) > 0 "At least one variable must be marked as measured"
-    measured = measured_reference
-    
-    measured_names = string.(measured)
-    if !(all(name->name ∈ names(data), measured_names))
-        error("Measured data points must exist in both model solution & test data; measured parameters in solution: $(measured_names) vs. in data $(names(data))")
-    end
+function compare_discrete(sys, data_a::DataFrame, data_b::DataFrame)
+    @assert "timestamp" ∈ names(data_a) "The dataset A must contain a column named `timestamp`"
+    @assert "timestamp" ∈ names(data_b) "The dataset B must contain a column named `timestamp`"
 
-    data_matrix = collect.(eachrow(data[!, string.(measured)]))  # lame and slow
-    solution_data = sol[measured]
-    metrics = Dict{Symbol, Any}()
-    compute_error_metrics(metrics, solution_data, data_matrix)
-    metrics[:final] = recursive_mean(abs.(solution_data[end] - collect(data[end, string.(measured)])))
-    results[:metrics] = metrics
-    cols = []
-    push!(cols, :timestamp => data[:, :timestamp])
-    append!(cols, make_cols(namespace_symbol.((:simulated,), measured), solution_data))
-    append!(cols, make_cols(namespace_symbol.((:data,), measured), data_matrix))
-    results[:data] = DataFrame(cols)
-    return results
-
+    measured = measured_values(sys)
+    measured_cols = measured_names(measured)
+    @assert all(c->c ∈ names(data_a), measured_cols) "All measured values must exist in both datasets (missing value in A)"
+    @assert all(c->c ∈ names(data_b), measured_cols) "All measured values must exist in both datasets (missing value in B)"
+    
+    test_results = Dict{Symbol, Any}()
+    delta_sol = data_a[:, measured_cols] .- data_b[:, measured_cols]
+    test_results[:final] = recursive_mean(abs.(collect(delta_sol[end, :])))
+    compute_error_metrics(test_results, collect.(eachrow(data_a[:, measured_cols])), collect.(eachrow(data_b[:, measured_cols])))
+    return test_results
 end
-export validate, compare_discrete_to_continous
+export validate, compare_discrete_to_continous, compare_discrete

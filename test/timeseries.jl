@@ -17,25 +17,30 @@ tol = 1e-6
         prob3 = ODEProblem(fol, [fol.x => 0.0], (0.0, 10.0), [fol.τ => 1.0])
         sol3 = solve(prob3, Tsit5(), reltol = 1e-8, abstol = 1e-8)
 
-        results = compare_solutions(:reference=>sol1, [:good=>sol2, :bad=>sol3])
-        
-        @test results[:metrics][:good][:l∞] < tol
-        @test results[:metrics][:good][:l2] < tol
-        @test results[:metrics][:good][:final] < tol
-        @test results[:metrics][:bad][:l∞] > tol
-        @test results[:metrics][:bad][:l2] > tol
-        @test results[:metrics][:bad][:final] > tol
+        d1 = discretize_solution(sol1, sol1)
+        d2 = discretize_solution(sol2, sol1)
+        d3 = discretize_solution(sol3, sol1)
+        results_good = compare_discrete(fol, d1, d2)
+        results_bad = compare_discrete(fol, d1, d3)
+        @test results_good[:l∞] < tol
+        @test results_good[:l2] < tol
+        @test results_good[:final] < tol
+        @test results_bad[:l∞] > tol
+        @test results_bad[:l2] > tol
+        @test results_bad[:final] > tol
 
         knots = collect(1:0.1:10)
-        results = compare_solutions(:reference=>sol1, [:good=>sol2, :bad=>sol3]; knots=knots)
-        
-        @test nrow(results[:data]) == length(knots)
-        @test results[:metrics][:good][:l∞] < tol
-        @test results[:metrics][:good][:l2] < tol
-        @test results[:metrics][:good][:final] < tol
-        @test results[:metrics][:bad][:l∞] > tol
-        @test results[:metrics][:bad][:l2] > tol
-        @test results[:metrics][:bad][:final] > tol
+        d1 = discretize_solution(sol1, knots)
+        d2 = discretize_solution(sol2, knots)
+        d3 = discretize_solution(sol3, knots)
+        results_good = compare_discrete(fol, d1, d2)
+        results_bad = compare_discrete(fol, d1, d3)
+        @test results_good[:l∞] < tol
+        @test results_good[:l2] < tol
+        @test results_good[:final] < tol
+        @test results_bad[:l∞] > tol
+        @test results_bad[:l2] > tol
+        @test results_bad[:final] > tol
     end
     @testset "Model-Model Continous Comparison" begin 
         @variables t 
@@ -52,11 +57,12 @@ tol = 1e-6
         prob3 = ODEProblem(fol, [fol.x => 0.0], (0.0, 10.0), [fol.τ => 1.0])
         sol3 = solve(prob3, Tsit5(), reltol = 1e-8, abstol = 1e-8)
 
-        results = compare_dense_solutions(:reference=>sol1, [:good=>sol2, :bad=>sol3])
-        @test results[Symbol("good/x(t)"), end] < tol
-        @test results[Symbol("good/y(t)"), end] < tol
-        @test results[Symbol("bad/x(t)"), end] > tol
-        @test results[Symbol("bad/y(t)"), end] > tol
+        results_good = compare_dense_solutions(sol1, sol2)
+        results_bad = compare_dense_solutions(sol1, sol3)
+        @test results_good[Symbol("x(t)")][end] < tol
+        @test results_good[Symbol("y(t)")][end] < tol
+        @test results_bad[Symbol("x(t)")][end] > tol
+        @test results_bad[Symbol("y(t)")][end] > tol
     end
 end
 

@@ -15,7 +15,6 @@ function ModelTesting.validate(model::AbstractTimeDependentSystem, data; pem_coe
     else
         model_transformations = []
     end
-    println(experiment_kwargs)
     experiment = Experiment(data, model; 
         model_transformations = model_transformations, 
         filter(arg->first(arg) != :model_transformations, experiment_kwargs)...)

@@ -11,3 +11,12 @@ end
 function measured_values(sys, v=all_variable_symbols(sys))
     filter(x -> ismeasured(x, false), v)
 end
+
+function measured_system_values(sys)
+    reference_container = symbolic_container(sys)
+    return measured_values(reference_container)
+end
+
+function measured_names(measured)
+    return string.(measured)
+end
