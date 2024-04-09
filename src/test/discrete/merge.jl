@@ -16,7 +16,6 @@ function merge_results(
                 validate=(true, true), 
                 renamecols = (x -> x) => col_rename)
         end
-        display(merged)
     end
     return merged
 end

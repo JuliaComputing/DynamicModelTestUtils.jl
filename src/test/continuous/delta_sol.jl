@@ -16,29 +16,33 @@ function make_cols(names, rows)
     return cols
 end
 
-function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution, time_ref::SciMLBase.AbstractTimeseriesSolution)
+function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution, time_ref::SciMLBase.AbstractTimeseriesSolution; all_observed=false)
     container = symbolic_container(time_ref)
     ref_t_vars = independent_variable_symbols(container)
     if length(ref_t_vars) > 1
         @error "PDE solutions not currently supported; only one iv is allowed"
     end
-    return discretize_solution(solution, time_ref[first(ref_t_vars)])
+    return discretize_solution(solution, time_ref[first(ref_t_vars)]; all_observed=all_observed)
 end
-function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution, time_ref::DataFrame)
+function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution, time_ref::DataFrame; all_observed=false)
     @assert "timestamp" ∈ names(time_ref) "The dataset B must contain a column named `timestamp`"
-    return discretize_solution(solution, collect(time_ref[!, "timestamp"]))
+    return discretize_solution(solution, collect(time_ref[!, "timestamp"]); all_observed=all_observed)
 end
-function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution)
+function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution; all_observed=false)
     container = symbolic_container(solution)
     ref_t_vars = independent_variable_symbols(container)
     if length(ref_t_vars) > 1
         @error "PDE solutions not currently supported; only one iv is allowed"
     end
-    return discretize_solution(solution, solution[ref_t_var] )
+    return discretize_solution(solution, solution[ref_t_var]; all_observed=all_observed )
 end
-function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution, time_ref::AbstractArray)
+function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution, time_ref::AbstractArray; all_observed=false)
     container = symbolic_container(solution)
-    measured = measured_values(container)
+    if !all_observed
+        measured = measured_values(container)
+    else
+        measured = all_variable_symbols(container)
+    end
     ref_t_vars = independent_variable_symbols(container)
     if length(ref_t_vars) > 1
         @error "PDE solutions not currently supported; only one iv is allowed"

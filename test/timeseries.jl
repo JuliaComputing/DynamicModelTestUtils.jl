@@ -6,7 +6,7 @@ tol = 1e-6
         @variables t 
         D = Differential(t)
         # using ModelingToolkit: t_nounits as t, D_nounits as D
-        @variables x(t) [measured=true] y(t) [measured=true]
+        @variables x(t) [measured=true] y(t) [measured=false]
         @parameters τ
         @named fol_sys = ODESystem([D(x) ~ (1 - y) / τ; y ~ x], t)
         fol = structural_simplify(fol_sys)
@@ -22,25 +22,33 @@ tol = 1e-6
         d3 = discretize_solution(sol3, sol1)
         results_good = compare_discrete(fol, d1, d2)
         results_bad = compare_discrete(fol, d1, d3)
-        @test results_good[:l∞] < tol
-        @test results_good[:l2] < tol
-        @test results_good[:final] < tol
-        @test results_bad[:l∞] > tol
-        @test results_bad[:l2] > tol
-        @test results_bad[:final] > tol
+        @test results_good[:stage][:L∞] < tol
+        @test results_good[:mean][:L2] < tol
+        @test results_good[:final][:L∞] < tol
+        @test results_bad[:stage][:L∞] > tol
+        @test results_bad[:mean][:L2] > tol
+        @test results_bad[:final][:L∞] > tol
 
         knots = collect(1:0.1:10)
-        d1 = discretize_solution(sol1, knots)
-        d2 = discretize_solution(sol2, knots)
-        d3 = discretize_solution(sol3, knots)
-        results_good = compare_discrete(fol, d1, d2)
-        results_bad = compare_discrete(fol, d1, d3)
-        @test results_good[:l∞] < tol
-        @test results_good[:l2] < tol
-        @test results_good[:final] < tol
-        @test results_bad[:l∞] > tol
-        @test results_bad[:l2] > tol
-        @test results_bad[:final] > tol
+        dk1 = discretize_solution(sol1, knots)
+        dk2 = discretize_solution(sol2, knots)
+        dk3 = discretize_solution(sol3, knots)
+        k_results_good = compare_discrete(fol, dk1, dk2)
+        k_results_bad = compare_discrete(fol, dk1, dk3)
+        @test k_results_good[:stage][:L∞] < tol
+        @test k_results_good[:mean][:L2] < tol
+        @test k_results_good[:final][:L∞] < tol
+        @test k_results_bad[:stage][:L∞] > tol
+        @test k_results_bad[:mean][:L2] > tol
+        @test k_results_bad[:final][:L∞] > tol
+
+        da1 = discretize_solution(sol1, sol1; all_observed=true)
+        da2 = discretize_solution(sol2, sol1; all_observed=true)
+        da3 = discretize_solution(sol3, sol1; all_observed=true)
+        all_results_good = compare_discrete(fol, da1, da2)
+        all_results_bad = compare_discrete(fol, da1, da3)
+        @test all_results_good[:mean][:L2] >= results_good[:mean][:L2]
+        @test all_results_bad[:mean][:L2] >= results_bad[:mean][:L2]
 
         merge_results(:reference => d1, :good => d2, :bad => d3)
     end
@@ -91,7 +99,7 @@ end
         results_good = compare_discrete(fol, data, sim_good)
         results_bad = compare_discrete(fol, data, sim_bad)
 
-        @test results_good[:l∞] < results_bad[:l∞]
-        @test results_good[:l2] < results_bad[:l2]
+        @test results_good[:stage][:L∞] < results_bad[:stage][:L∞]
+        @test results_good[:mean][:L2] < results_bad[:mean][:L2]
     end
 end

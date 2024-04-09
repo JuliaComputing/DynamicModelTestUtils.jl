@@ -13,7 +13,7 @@ function ModelTesting.validate(model::AbstractTimeDependentSystem, data; pem_coe
             model_transformations = []
         end
     else
-        model_transformations = []
+        model_transformations = experiment_kwargs[:model_transformations]
     end
     experiment = Experiment(data, model; 
         model_transformations = model_transformations, 
