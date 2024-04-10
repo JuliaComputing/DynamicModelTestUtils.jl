@@ -38,8 +38,6 @@ using ModelingToolkitStandardLibrary.Blocks: Constant
         d3 = discretize_solution(sol3, sol1)
         results_good = compare_discrete(sys, d1, d2)
         results_bad = compare_discrete(sys, d1, d3)
-
-        println(results_bad)
     end
     @testset "RC Functional" begin 
         R = 1.0
@@ -76,7 +74,5 @@ using ModelingToolkitStandardLibrary.Blocks: Constant
         d3 = discretize_solution(sol3, sol1)
         results_good = compare_discrete(sys, d1, d2)
         results_bad = compare_discrete(sys, d1, d3)
-
-        println(results_bad)
     end
 end
