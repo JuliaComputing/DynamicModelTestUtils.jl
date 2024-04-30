@@ -7,4 +7,5 @@ using Test
 @testset "ModelTesting.jl" begin
     include("timeseries.jl")
     include("block_modeling.jl")
+    include("instantaneous.jl")
 end

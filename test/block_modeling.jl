@@ -64,6 +64,12 @@ using ModelingToolkitStandardLibrary.Blocks: Constant
         sys = structural_simplify(rc_model)
         prob1 = ODEProblem(sys, Pair[], (0, 10.0))
         sol1 = solve(prob1, Tsit5())
+
+        ref = DataFrame(:timestamp => sol1.t, Symbol(resistor.v) => sol1[resistor.v])
+        measure, measured_sys = compare_data(resistor.v, ref)(sys)
+        prob_measured = ODEProblem(measured_sys, Pair[], (0, 10.0))
+        sol_measured = solve(prob_measured, Tsit5())
+
         prob2 = ODEProblem(sys, Pair[capacitor.C => 0.9], (0, 10.0))
         sol2 = solve(prob2, Tsit5())
         prob3 = ODEProblem(sys, Pair[capacitor.C => 5.0], (0, 10.0))
