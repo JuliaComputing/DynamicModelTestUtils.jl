@@ -36,12 +36,14 @@ function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution; all
     end
     return discretize_solution(solution, solution[ref_t_var]; all_observed=all_observed )
 end
-function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution, time_ref::AbstractArray; all_observed=false)
+function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution, time_ref::AbstractArray; measured=nothing, all_observed=false)
     container = symbolic_container(solution)
-    if !all_observed
-        measured = measured_values(container)
-    else
-        measured = all_variable_symbols(container)
+    if isnothing(measured)
+        if all_observed
+            measured = all_variable_symbols(container)
+        else
+            measured = measured_values(container)
+        end
     end
     ref_t_vars = independent_variable_symbols(container)
     if length(ref_t_vars) > 1
@@ -65,14 +67,16 @@ export discretize_solution
 function compare_dense_solutions(
     reference::SciMLBase.AbstractTimeseriesSolution,
     sol::SciMLBase.AbstractTimeseriesSolution;
+    reference_measured = nothing,
+    solution_measured = nothing,
     integrator=Tsit5()
 )
     results = Dict{Symbol, Any}()
     reference_container = symbolic_container(reference)
     containers = symbolic_container(sol)
 
-    measured_reference = measured_values(reference_container)
-    sol_measured = measured_values(containers)
+    measured_reference = isnothing(reference_measured) ? measured_values(reference_container) : reference_measured
+    sol_measured = isnothing(solution_measured) ? measured_values(containers) : sol_measured
     @assert _symbolic_subset(measured_reference, sol_measured) "Test solutions must expose a superset of the reference's variables for comparison"
     @assert length(measured_reference) > 0 "Compared solutions must share at least one measured variable"
     measured = measured_reference
