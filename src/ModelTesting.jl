@@ -8,6 +8,8 @@ include("test/continuous/delta_sol.jl")
 include("test/discrete/single_shooting.jl")
 include("test/discrete/merge.jl")
 include("test/metric/metric.jl")
+include("test/discrete/compare.jl")
+include("test/metric/spec.jl")
 include("test/instantaneous/instant.jl")
 include("problem_config/problem.jl")
 end

@@ -17,7 +17,7 @@ function make_cols(names, rows)
 end
 
 function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution, time_ref::SciMLBase.AbstractTimeseriesSolution; all_observed=false)
-    container = symbolic_container(time_ref)
+    container = SymbolicIndexingInterface.symbolic_container(time_ref)
     ref_t_vars = independent_variable_symbols(container)
     if length(ref_t_vars) > 1
         @error "PDE solutions not currently supported; only one iv is allowed"
@@ -29,15 +29,15 @@ function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution, tim
     return discretize_solution(solution, collect(time_ref[!, "timestamp"]); all_observed=all_observed)
 end
 function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution; all_observed=false)
-    container = symbolic_container(solution)
+    container = SymbolicIndexingInterface.symbolic_container(solution)
     ref_t_vars = independent_variable_symbols(container)
     if length(ref_t_vars) > 1
         @error "PDE solutions not currently supported; only one iv is allowed"
     end
-    return discretize_solution(solution, solution[ref_t_var]; all_observed=all_observed )
+    return discretize_solution(solution, solution[first(ref_t_vars)]; all_observed=all_observed )
 end
 function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution, time_ref::AbstractArray; measured=nothing, all_observed=false)
-    container = symbolic_container(solution)
+    container = SymbolicIndexingInterface.symbolic_container(solution)
     if isnothing(measured)
         if all_observed
             measured = all_variable_symbols(container)
@@ -72,8 +72,8 @@ function compare_dense_solutions(
     integrator=Tsit5()
 )
     results = Dict{Symbol, Any}()
-    reference_container = symbolic_container(reference)
-    containers = symbolic_container(sol)
+    reference_container = SymbolicIndexingInterface.symbolic_container(reference)
+    containers = SymbolicIndexingInterface.symbolic_container(sol)
 
     measured_reference = isnothing(reference_measured) ? measured_values(reference_container) : reference_measured
     sol_measured = isnothing(solution_measured) ? measured_values(containers) : sol_measured
