@@ -1,13 +1,16 @@
 function compare(
     new_sol::SciMLBase.AbstractTimeseriesSolution, basis::Vector, 
     reference::DataFrame, reference_basis::Vector,
-    cmp::Function, red::Function; init=nothing)
+    cmp::Function; warn_observed=true)
     @assert "timestamp" ∈ names(reference) "The dataset must contain a column named `timestamp`"
     new_container = SymbolicIndexingInterface.symbolic_container(new_sol)
     @assert all(SymbolicIndexingInterface.is_observed.((new_container, ), basis) .| SymbolicIndexingInterface.is_variable.((new_container, ), basis)) "All basis symbols must be observed in the new system"
     @assert all(b ∈ names(reference) for b in reference_basis) "The reference basis must be a subset of the columns in the reference data"
     if new_sol.dense
-        foldl(red, cmp(row[:timestamp], new_sol(row[:timestamp], idxs=basis), row[reference_basis]) for row in eachrow(reference); init=isnothing(init) ? nothing : init(basis))
+        dat = new_sol(reference[:, :timestamp], idxs=basis)
+        obs = [[dat[j][i] for j=1:nrow(reference)] for i in eachindex(basis)]
+        ref = collect.(eachcol(reference[:, Not(:timestamp)]))
+        cmp(basis, reference[:, :timestamp], obs, ref)
     else 
         foldl(red, cmp(row[:timestamp], new_sol[row[:timestamp], basis], row[reference_basis]) for row in eachrow(reference); init=isnothing(init) ? nothing : init(basis))
     end
@@ -16,7 +19,7 @@ end
 function compare(
     new_sol::SciMLBase.AbstractTimeseriesSolution,
     reference::DataFrame,
-    cmp::Function, red::Function; init=nothing, to_name=string, warn_observed=true)
+    cmp::Function; to_name=string, warn_observed=true)
     @assert "timestamp" ∈ names(reference) "The dataset must contain a column named `timestamp`"
 
     new_container = SymbolicIndexingInterface.symbolic_container(new_sol)
@@ -30,17 +33,24 @@ function compare(
         end
         matching_sym 
     end for ref_name in setdiff(names(reference), ["timestamp"])] 
-    return compare(new_sol, eval_syms, reference, setdiff(names(reference), ["timestamp"]), cmp, red; init=init)
+    return compare(new_sol, eval_syms, reference, setdiff(names(reference), ["timestamp"]), cmp)
 end
 
 function compare(
     new_sol::SciMLBase.AbstractTimeseriesSolution,
     reference::DataFrame; warn_observed=true)
     @assert "timestamp" ∈ names(reference) "The dataset must contain a column named `timestamp`"
+    new_container = SymbolicIndexingInterface.symbolic_container(new_sol)
     return compare(new_sol, reference, 
-        (t, n, r) -> abs.(collect(n) .- collect(r)), 
-        (acc, nv) -> begin acc[:, :l∞] = max.(collect(acc[:, :l∞]), collect(nv)); acc end; 
-        init=(v) -> DataFrame(:name => v, :l∞ => zeros.(length(v))), 
+        (b, t, n, r) -> begin
+            delta = map((o, re) -> o .- re, n, r)
+            return DataFrame(:var => b, 
+                :L∞ => norm.(delta, Inf), 
+                :L1 => norm.(delta, 1), 
+                :L2 => norm.(delta, 2), 
+                :rms => sqrt.(1/length(t) .* sum.(map(d-> d .^ 2, delta))),
+                :observed => SymbolicIndexingInterface.is_observed.(new_container, b))
+        end,
         warn_observed=warn_observed)
 end
 export compare
