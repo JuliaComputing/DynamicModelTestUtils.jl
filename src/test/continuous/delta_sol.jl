@@ -28,13 +28,13 @@ function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution, tim
     @assert "timestamp" ∈ names(time_ref) "The dataset B must contain a column named `timestamp`"
     return discretize_solution(solution, collect(time_ref[!, "timestamp"]); measured=measured, all_observed=all_observed)
 end
-function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution; all_observed=false)
+function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution; measured=nothing, all_observed=false)
     container = SymbolicIndexingInterface.symbolic_container(solution)
     ref_t_vars = independent_variable_symbols(container)
     if length(ref_t_vars) > 1
         @error "PDE solutions not currently supported; only one iv is allowed"
     end
-    return discretize_solution(solution, solution[first(ref_t_vars)]; all_observed=all_observed )
+    return discretize_solution(solution, solution[first(ref_t_vars)]; measured=measured, all_observed=all_observed )
 end
 function discretize_solution(solution::SciMLBase.AbstractTimeseriesSolution, time_ref::AbstractArray; measured=nothing, all_observed=false)
     container = SymbolicIndexingInterface.symbolic_container(solution)
