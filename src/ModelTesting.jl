@@ -1,6 +1,6 @@
 module ModelTesting
 using DataFrames, StatsBase, LinearAlgebra
-using ModelingToolkit, DifferentialEquations, SymbolicIndexingInterface
+using ModelingToolkit, SciMLBase, SymbolicIndexingInterface
 abstract type DiscreteEvaluation end
 abstract type Metric end
 include("test/measured.jl")
