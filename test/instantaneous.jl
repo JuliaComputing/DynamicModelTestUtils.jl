@@ -11,7 +11,6 @@
         @named ground = Ground()
 
         @named sensor = PotentialSensor()
-        @named key_parameter = Measurement(sensor)
 
         rc_eqs = [connect(constant.output, source.V)
                 connect(source.p, resistor.p)
@@ -20,7 +19,7 @@
                 connect(sensor.p, capacitor.p)]
 
         @named rc_model = ODESystem(rc_eqs, t,
-            systems = [resistor, capacitor, constant, source, ground, sensor, key_parameter])
+            systems = [resistor, capacitor, constant, source, ground, sensor])
         sys = structural_simplify(rc_model)
         @test test_instantaneous(sys, [], [resistor.v]; t = 0.0)[1] > 0
         @test test_instantaneous(sys, [], [resistor.i]; t = 0.0)[1] > 0

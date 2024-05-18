@@ -32,7 +32,7 @@ end
 end
 
 function Measurement(sensor; name)
-    @assert length(sensor.states) == 1 "The Measurement helper requires that the measurement component have only one scalar-valued state"
+    @assert length(variable_symbols(sensor)) == 1 "The Measurement helper requires that the measurement component have only one scalar-valued state"
     @variables t value(t) [measured = true]
     return ODESystem([
         value ~ first(sensor.states)

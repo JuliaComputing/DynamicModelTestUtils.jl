@@ -1,7 +1,7 @@
 name = "ModelTesting"
 uuid = "726cd793-0c59-4a7a-97d2-1baad301d093"
 authors = ["Ben Chung <benjamin.chung@juliahub.com> and contributors"]
-version = "1.0.4-DEV"
+version = "1.0.5-DEV"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -11,12 +11,6 @@ ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 SymbolicIndexingInterface = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
-
-[weakdeps]
-JuliaSimModelOptimizer = "e76a656c-db09-4a9a-8f5e-6a4d9ca4a950"
-
-[extensions]
-ModelTestingCalibration = "JuliaSimModelOptimizer"
 
 [compat]
 julia = "1.10"
@@ -28,4 +22,4 @@ ModelingToolkitStandardLibrary = "16a59e39-deab-5bd0-87e4-056b12336739"
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 
 [targets]
-test = ["Test", "JuliaSimModelOptimizer", "ModelingToolkitStandardLibrary", "DifferentialEquations"]
+test = ["Test", "ModelingToolkitStandardLibrary", "DifferentialEquations"]
