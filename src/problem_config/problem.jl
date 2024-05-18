@@ -1,5 +1,6 @@
 module ProblemHelpers
 import SciMLBase
+using DataFrame
 # some thin wrappers over remake
 initial_condition(prob::SciMLBase.AbstractDEProblem, u0) = remake(prob, u0 = u0)
 tspan(prob::SciMLBase.AbstractDEProblem, tspan) = remake(prob, tspan = tspan)
