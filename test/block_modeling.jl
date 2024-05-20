@@ -28,23 +28,26 @@ using SymbolicIndexingInterface
         sys = structural_simplify(rc_model)
         prob1 = ODEProblem(sys, Pair[], (0, 10.0))
         sol1 = solve(prob1, Tsit5())
-
-        #=
-        ref = DataFrame(:timestamp => sol1.t, Symbol(resistor.v) => sol1[resistor.v])
-        measure, measured_sys = compare_data([resistor.v], ref)(sys)
-        prob_measured = ODEProblem(measured_sys, Pair[], (0, 10.0))
-        sol_measured = solve(prob_measured, Tsit5())
-=#
-        prob2 = ODEProblem(sys, Pair[capacitor.C => 0.9], (0, 10.0))
+        prob2 = ODEProblem(sys, Pair[capacitor.C => 0.9], (0, 10.0)) # this converges to nearly the same solution but is a little too fast
         sol2 = solve(prob2, Tsit5())
-        prob3 = ODEProblem(sys, Pair[capacitor.C => 5.0], (0, 10.0))
+        prob3 = ODEProblem(sys, Pair[capacitor.C => 5.0], (0, 10.0)) # this doesn't stabilize in the allotted time
         sol3 = solve(prob3, Tsit5())
 
         d1 = discretize_solution(sol1, sol1)
-
         ds1 = discretize_solution(sol1, sol1; measured=SymbolicIndexingInterface.all_variable_symbols(sys))
-        println(compare(sol3, ds1))
-        println(compare(sol2, ds1))
-        println(compare(sol1, ds1))
+
+        @test sum(compare(sol1, ds1; warn_observed=false)[:, :L∞]) < 0.01
+        @test sum(compare(sol2, ds1; warn_observed=false)[:, :L∞]) > sum(compare(sol1, ds1; warn_observed=false)[:, :L∞])
+        @test sum(compare(sol3, ds1; warn_observed=false)[:, :L∞]) > sum(compare(sol2, ds1; warn_observed=false)[:, :L∞])
+        @test sum(compare(sol1, ds1; warn_observed=false)[:, :L∞]) > sum(compare(sol1, d1; warn_observed=false)[:, :L∞])
+        @test sum(compare(sol2, ds1; warn_observed=false)[:, :L∞]) > sum(compare(sol2, d1; warn_observed=false)[:, :L∞])
+        @test sum(compare(sol3, ds1; warn_observed=false)[:, :L∞]) > sum(compare(sol3, d1; warn_observed=false)[:, :L∞])
+
+        # construct a fictional power measurement
+        power_synth = select(ds1, :timestamp, ["capacitor₊v(t)", "capacitor₊i(t)"] => ((v, i) -> v .* i) => "power")
+        @test compare(sol1, power_synth, [capacitor.i * capacitor.v => "power" => "power"])[1, "L∞"] < 0.01
+        @test compare(sol2, power_synth, [capacitor.i * capacitor.v => "power" => "power"])[1, "L∞"] < 0.05
+        @test compare(sol3, power_synth, [capacitor.i * capacitor.v => "power" => "power"])[1, "L∞"] < 0.3
+        
     end
 end
