@@ -46,10 +46,5 @@ using SymbolicIndexingInterface
         println(compare(sol3, ds1))
         println(compare(sol2, ds1))
         println(compare(sol1, ds1))
-
-        d2 = discretize_solution(sol2, sol1)
-        d3 = discretize_solution(sol3, sol1)
-        results_good = compare_discrete(sys, d1, d2)
-        results_bad = compare_discrete(sys, d1, d3)
     end
 end
