@@ -3,18 +3,19 @@ struct DefaultComparison
     function DefaultComparison(field_cmp::Dict{Symbol, Function}=Dict{Symbol, Function}(); use_defaults=true) 
         if use_defaults
             merge!(field_cmp, Dict{Symbol, Function}([
-                :L∞ => (delta, t) -> norm.(delta, Inf), 
-                :L1 => (delta, t) -> norm.(delta, 1), 
-                :L2 => (delta, t) -> norm.(delta, 2), 
-                :rms => (delta, t) -> sqrt.(1/length(t) .* sum.(map(d-> d .^ 2, delta))),
-                :final => (delta, t) -> last.(delta)]))
+                :L∞ => (delta, dt_delta, t) -> norm.(dt_delta, Inf), 
+                :L1 => (delta, dt_delta, t) -> norm.(dt_delta, 1), 
+                :L2 => (delta, dt_delta, t) -> norm.(dt_delta, 2), 
+                :rms => (delta, dt_delta, t) -> sqrt.(1/length(t) .* sum.(map(d-> d .^ 2, dt_delta))),
+                :final => (delta, dt_delta, t) -> last.(delta)]))
         end
         return new(field_cmp)
     end
 end
 function (d::DefaultComparison)(c, names, b, t, n, r) 
     delta = map((o, re) -> o .- re, n, r)
-    cmps = [name => cmper(delta, t) for (name, cmper) in d.field_cmp]
+    dt_delta = map(d -> 0.5 * (d[1:end-1] .+ d[2:end]) .* (t[2:end] .- t[1:end-1]), delta) 
+    cmps = [name => cmper(delta, dt_delta, t) for (name, cmper) in d.field_cmp]
     return DataFrame([:var => names, cmps...,
         :observed => SymbolicIndexingInterface.is_observed.(c, b)])
 end
