@@ -48,11 +48,14 @@ function compare(
     reference::DataFrame,
     cmp=DefaultComparison(); to_name=string, warn_observed=true)
     @assert "timestamp" ∈ names(reference) "The dataset must contain a column named `timestamp`"
+    eval_syms = reference_syms(SymbolicIndexingInterface.symbolic_container(new_sol), reference, to_name, warn_observed)
+    return compare(new_sol, reference, eval_syms .=> setdiff(names(reference), ["timestamp"]), cmp)
+end
 
-    new_container = SymbolicIndexingInterface.symbolic_container(new_sol)
+function reference_syms(new_container, reference, to_name, warn_observed)
     all_available = SymbolicIndexingInterface.all_variable_symbols(new_container)
     all_available_syms = Dict(to_name.(all_available) .=> all_available)
-    eval_syms = [ begin
+    return [ begin
         @assert ref_name ∈ keys(all_available_syms) "Reference value $ref_name not found in the new solution (either as state or observed)"
         matching_sym = all_available_syms[ref_name]
         if warn_observed && SymbolicIndexingInterface.is_observed(new_container, matching_sym)
@@ -60,6 +63,6 @@ function compare(
         end
         matching_sym 
     end for ref_name in setdiff(names(reference), ["timestamp"])] 
-    return compare(new_sol, reference, eval_syms .=> setdiff(names(reference), ["timestamp"]), cmp)
 end
+
 export compare
