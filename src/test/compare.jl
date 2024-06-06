@@ -35,7 +35,7 @@ function compare(
     @assert all(b ∈ names(reference) for b in reference_basis) "The reference basis must be a subset of the columns in the reference data"
     if new_sol.dense
         dat = new_sol(reference[:, :timestamp], idxs=basis)
-        obs = [[dat[j][i] for j=1:nrow(reference)] for i in eachindex(basis)]
+        obs = [[dat[i, j] for j=1:nrow(reference)] for i in eachindex(basis)]
         ref = collect.(eachcol(reference[:, Not(:timestamp)]))
         cmp(new_container, output_names, basis, reference[:, :timestamp], obs, ref)
     else 
