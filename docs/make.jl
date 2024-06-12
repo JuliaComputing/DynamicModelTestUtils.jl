@@ -17,3 +17,6 @@ makedocs(;
         "Home" => "index.md",
     ],
 )
+deploydocs(
+    repo = "github.com/JuliaComputing/ModelTesting.jl.git",
+)
