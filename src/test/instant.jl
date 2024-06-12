@@ -3,29 +3,28 @@ function test_instantaneous(
     sys::ModelingToolkit.AbstractSystem,
     ic,
     checks::Num;
-    t = nothing) # todo: after porting to v9 use InitializationSystem to solve the checks system
-    if !SymbolicIndexingInterface.is_observed(checks)
-        @assert false "The given check values are not observed values of the given system"
-    end
-    sv = ModelingToolkit.varmap_to_vars(ic, variable_symbols(sys); defaults=default_values(sys))
-    pv = ModelingToolkit.varmap_to_vars(ic, parameter_symbols(sys); defaults=default_values(sys))
-
-    obsfun = SymbolicIndexingInterface.observed(sys, checks)
-    if SymbolicIndexingInterface.istimedependent(sys)
-        @assert !isnothing(t) "The kwarg t must be given (and be a non-nothing value) if the system is time dependent"
-        return obsfun(sv, pv, t)
-    elseif !SymbolicIndexingInterface.constant_structure(sys)
-        @assert false "The system's structure must be constant to use test_instantaneous; to be fixed" # TODO
-    else
-        return obsfun(sv, pv)
-    end
+    t = nothing)
+    return test_instantaneous(sys, ic, checks; t = t)
 end
 
+"""
+    test_instantaneous(sys::ModelingToolkit.AbstractSystem,
+        ic,
+        checks::Union{Num, Array};
+        t = nothing)
+
+`test_instantaneous` is a helper wrapper around constructing and executing an `ODEProblem` at a specific condition. It's intended for use in basic
+sanity checking of MTK models, for example to ensure that the derivative at a given condition has the correct sign. It should be passed the system,
+the initial condition dictionary to be given to the ODEProblem constructor (including parameters), and a list of observable values from the system to
+extract from the ODEProblem. If `checks` is a single `Num` then the result will be that observed value; otherwise it will return an array in the same
+order as the provided checks.
+"""
 function test_instantaneous(
     sys::ModelingToolkit.AbstractSystem,
     ic,
     checks::Array;
-    t = nothing) # todo: after porting to v9 use InitializationSystem to solve the checks system
+    t = nothing)
+    t = isnothing(t) ? 0.0 : t
     prob = ODEProblem(sys, ic, (0.0, 0.0))
     getter = getu(prob, checks)
     return getter(prob)
