@@ -1,13 +1,13 @@
-using ModelTesting
+using DynamicModelTestUtils
 using Documenter
 
-DocMeta.setdocmeta!(ModelTesting, :DocTestSetup, :(using ModelTesting); recursive=true)
+DocMeta.setdocmeta!(DynamicModelTestUtils, :DocTestSetup, :(using DynamicModelTestUtils); recursive=true)
 
 makedocs(;
-    modules=[ModelTesting],
+    modules=[DynamicModelTestUtils],
     authors="Ben Chung <benjamin.chung@juliahub.com> and contributors",
-    repo="https://github.com/BenChung/ModelTesting.jl/blob/{commit}{path}#{line}",
-    sitename="ModelTesting.jl",
+    repo="https://github.com/BenChung/DynamicModelTestUtils.jl/blob/{commit}{path}#{line}",
+    sitename="DynamicModelTestUtils.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         edit_link="master",
@@ -18,5 +18,5 @@ makedocs(;
     ],
 )
 deploydocs(
-    repo = "github.com/JuliaComputing/ModelTesting.jl.git",
+    repo = "github.com/JuliaComputing/DynamicModelTestUtils.jl.git",
 )

@@ -83,8 +83,8 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: doctest
-            using ModelTesting
-            doctest(ModelTesting)'
+            using DynamicModelTestUtils
+            doctest(DynamicModelTestUtils)'
       - run: julia --project=docs docs/make.jl
         env:
           JULIA_PKG_SERVER: ""

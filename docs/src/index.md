@@ -1,12 +1,12 @@
 ```@meta
-CurrentModule = ModelTesting
+CurrentModule = DynamicModelTestUtils
 ```
 
-# ModelTesting
+# DynamicModelTestUtils
 
-Documentation for [ModelTesting](https://github.com/BenChung/ModelTesting.jl).
+Documentation for [DynamicModelTestUtils](https://github.com/BenChung/DynamicModelTestUtils.jl).
 
-ModelTesting is intended to facilitate the easy testing and post-facto analysis of ModelingToolkit models. It currently provides two key bits of functionality:
+DynamicModelTestUtils is intended to facilitate the easy testing and post-facto analysis of ModelingToolkit models. It currently provides two key bits of functionality:
 
 * Serialization of MTK solutions into a common format through `discretize_solution`.
 * Comparison of solutions to each other and to previously-saved data through `compare`.
@@ -16,5 +16,5 @@ ModelTesting is intended to facilitate the easy testing and post-facto analysis 
 ```
 
 ```@autodocs
-Modules = [ModelTesting]
+Modules = [DynamicModelTestUtils]
 ```
