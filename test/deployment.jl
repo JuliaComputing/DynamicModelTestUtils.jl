@@ -1,4 +1,4 @@
-using Git
+using Git, CSV
 @testset "deploy" begin
     @testset "bare" begin 
         mktempdir() do dir
