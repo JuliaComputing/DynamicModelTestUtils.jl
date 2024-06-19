@@ -8,4 +8,6 @@ include("test/discretize.jl")
 include("test/instant.jl")
 include("test/compare.jl")
 include("problem_config/problem.jl")
+include("deploy/deploy.jl")
+include("deploy/restore.jl")
 end
