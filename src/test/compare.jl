@@ -44,6 +44,14 @@ function (d::DefaultComparison)(c, names, b, t, n, r)
         :observed => SymbolicIndexingInterface.is_observed.(c, b)])
 end
 
+function default_near_zero(result; ϵ=1e-7)
+    obses = stack(result, 2:ncol(result)-1)
+    for obs in eachrow(obses)
+        @test obs[:value] < ϵ || "$(obs[:variable])($(obs[:var])) = $(obs[:value]) > ϵ = $ϵ"
+    end
+    @show result
+end
+
 
 """
     compare(
